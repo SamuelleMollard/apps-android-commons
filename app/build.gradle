@@ -30,7 +30,7 @@ dependencies {
     implementation 'com.jakewharton.rxbinding2:rxbinding-design:2.1.1'
     implementation 'com.facebook.fresco:fresco:1.13.0'
     implementation 'org.apache.commons:commons-lang3:3.8.1'
-    implementation 'com.github.maskaravivek:wikimedia-android-data-client:v0.0.28'
+    implementation 'com.github.maskaravivek:wikimedia-android-data-client:v0.0.30'
 
     // UI
     implementation 'fr.avianey.com.viewpagerindicator:library:2.4.1.1@aar'
@@ -82,6 +82,9 @@ dependencies {
     androidTestUtil 'androidx.test:orchestrator:1.2.0'
 
     // Debugging
+    debugImplementation 'com.facebook.stetho:stetho:1.5.1'
+    debugImplementation 'com.facebook.stetho:stetho-okhttp3:1.5.1'
+
     debugImplementation "com.squareup.leakcanary:leakcanary-android:$LEAK_CANARY_VERSION"
     releaseImplementation "com.squareup.leakcanary:leakcanary-android-no-op:$LEAK_CANARY_VERSION"
     testImplementation "com.squareup.leakcanary:leakcanary-android-no-op:$LEAK_CANARY_VERSION"

@@ -1,12 +1,15 @@
 package fr.free.nrw.commons;
 
+import androidx.annotation.NonNull;
+
+import com.facebook.stetho.okhttp3.StethoInterceptor;
+
 import org.wikipedia.dataclient.SharedPreferenceCookieManager;
 import org.wikipedia.dataclient.okhttp.HttpStatusException;
 
 import java.io.File;
 import java.io.IOException;
 
-import androidx.annotation.NonNull;
 import okhttp3.Cache;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -31,6 +34,7 @@ public final class OkHttpConnectionFactory {
         return new OkHttpClient.Builder()
                 .cookieJar(SharedPreferenceCookieManager.getInstance())
                 .cache(NET_CACHE)
+                .addNetworkInterceptor(new StethoInterceptor())
                 .addInterceptor(getLoggingInterceptor())
                 .addInterceptor(new UnsuccessfulResponseInterceptor())
                 .addInterceptor(new CommonHeaderRequestInterceptor())
@@ -39,10 +43,10 @@ public final class OkHttpConnectionFactory {
 
     private static HttpLoggingInterceptor getLoggingInterceptor() {
         HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor()
-                .setLevel(HttpLoggingInterceptor.Level.BASIC);
+                .setLevel(HttpLoggingInterceptor.Level.BODY);
 
-        httpLoggingInterceptor.redactHeader("Authorization");
-        httpLoggingInterceptor.redactHeader("Cookie");
+        //httpLoggingInterceptor.redactHeader("Authorization");
+        //httpLoggingInterceptor.redactHeader("Cookie");
 
         return httpLoggingInterceptor;
     }

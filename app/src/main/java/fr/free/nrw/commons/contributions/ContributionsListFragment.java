@@ -20,6 +20,8 @@ import androidx.recyclerview.widget.RecyclerView.LayoutManager;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.concurrent.Callable;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -30,6 +32,12 @@ import fr.free.nrw.commons.contributions.ContributionsListAdapter.Callback;
 import fr.free.nrw.commons.di.CommonsDaggerSupportFragment;
 import fr.free.nrw.commons.kvstore.JsonKvStore;
 import fr.free.nrw.commons.wikidata.WikidataClient;
+import fr.free.nrw.commons.wikidata.WikidataEditService;
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+import timber.log.Timber;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -60,6 +68,8 @@ public class ContributionsListFragment extends CommonsDaggerSupportFragment {
     @Inject ContributionController controller;
     @Inject
     WikidataClient wikidataClient;
+    @Inject
+    WikidataEditService wikidataEditService;
 
     private Animation fab_close;
     private Animation fab_open;
@@ -132,13 +142,21 @@ public class ContributionsListFragment extends CommonsDaggerSupportFragment {
     private void setListeners() {
         fabPlus.setOnClickListener(view -> animateFAB(isFabOpen));
         fabCamera.setOnClickListener(view -> {
-            controller.initiateCameraPick(getActivity());
-            animateFAB(isFabOpen);
+//            controller.initiateCameraPick(getActivity());
+//            animateFAB(isFabOpen);
+            editWikidata();
         });
         fabGallery.setOnClickListener(view -> {
             controller.initiateGalleryPick(getActivity(), true);
             animateFAB(isFabOpen);
         });
+    }
+
+    private void editWikidata() {
+        Observable.defer((Callable<ObservableSource<Long>>) () -> wikidataClient.createClaim("Q6975124", "P18", "value", "National_Public_School,_Indiranagar.jpg"))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(aLong -> Timber.d("Edited Wikidata"));
     }
 
     private void animateFAB(boolean isFabOpen) {

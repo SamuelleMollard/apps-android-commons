@@ -20,6 +20,7 @@ import androidx.annotation.NonNull;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.imagepipeline.core.ImagePipeline;
 import com.facebook.imagepipeline.core.ImagePipelineConfig;
+import com.facebook.stetho.Stetho;
 import com.squareup.leakcanary.LeakCanary;
 import com.squareup.leakcanary.RefWatcher;
 import fr.free.nrw.commons.auth.SessionManager;
@@ -114,6 +115,10 @@ public class CommonsApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        Stetho.initializeWithDefaults(this);
+
+
         INSTANCE = this;
         ACRA.init(this);
 

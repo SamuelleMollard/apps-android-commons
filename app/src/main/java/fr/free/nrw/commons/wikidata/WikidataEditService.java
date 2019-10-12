@@ -32,19 +32,16 @@ public class WikidataEditService {
     private final WikidataEditListener wikidataEditListener;
     private final JsonKvStore directKvStore;
     private final WikidataClient wikidataClient;
-    private final PageEditClient wikiDataPageEditClient;
 
     @Inject
     public WikidataEditService(Context context,
                                WikidataEditListener wikidataEditListener,
                                @Named("default_preferences") JsonKvStore directKvStore,
-                               WikidataClient wikidataClient,
-                               @Named("wikidata-page-edit") PageEditClient wikiDataPageEditClient) {
+                               WikidataClient wikidataClient) {
         this.context = context;
         this.wikidataEditListener = wikidataEditListener;
         this.directKvStore = directKvStore;
         this.wikidataClient = wikidataClient;
-        this.wikiDataPageEditClient = wikiDataPageEditClient;
     }
 
     /**
@@ -79,17 +76,17 @@ public class WikidataEditService {
      * @param fileName
      */
     @SuppressLint("CheckResult")
-    private void editWikidataProperty(String wikidataEntityId, String fileName) {
+    public void editWikidataProperty(String wikidataEntityId, String fileName) {
         Timber.d("Upload successful with wiki data entity id as %s", wikidataEntityId);
         Timber.d("Attempting to edit Wikidata property %s", wikidataEntityId);
 
         String propertyValue = getFileName(fileName);
 
-        Timber.d(propertyValue);
+        Timber.d("Entity id is %s and property value is %s", wikidataEntityId, propertyValue);
         wikidataClient.createClaim(wikidataEntityId, "P18", "value", propertyValue)
                 .flatMap(revisionId -> {
                     if (revisionId != -1) {
-                        return wikiDataPageEditClient.addEditTag(revisionId, COMMONS_APP_TAG, COMMONS_APP_EDIT_REASON);
+                        return wikidataClient.addEditTag(revisionId, COMMONS_APP_TAG, COMMONS_APP_EDIT_REASON);
                     }
                     throw new RuntimeException("Unable to edit wikidata item");
                 })

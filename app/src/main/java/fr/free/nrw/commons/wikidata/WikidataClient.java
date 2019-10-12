@@ -1,32 +1,39 @@
 package fr.free.nrw.commons.wikidata;
 
-import org.wikipedia.csrf.CsrfTokenClient;
-import org.wikipedia.dataclient.Service;
+import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 
+import fr.free.nrw.commons.auth.AuthTokenClient;
 import io.reactivex.Observable;
-
-import static fr.free.nrw.commons.di.NetworkingModule.NAMED_WIKI_DATA_CSRF;
+import io.reactivex.ObservableSource;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import timber.log.Timber;
 
 @Singleton
 public class WikidataClient {
 
-    private final Service service;
-    private final CsrfTokenClient csrfTokenClient;
+    private final WikidataInterface wikidataInterface;
+    private final AuthTokenClient authTokenClient;
 
     @Inject
-    public WikidataClient(@Named("wikidata-service") Service service,
-                          @Named(NAMED_WIKI_DATA_CSRF) CsrfTokenClient csrfTokenClient) {
-        this.service = service;
-        this.csrfTokenClient = csrfTokenClient;
+    public WikidataClient(WikidataInterface wikidataInterface,
+                          AuthTokenClient authTokenClient) {
+        this.wikidataInterface = wikidataInterface;
+        this.authTokenClient = authTokenClient;
     }
 
     public Observable<Long> createClaim(String entityId, String property, String snaktype, String value) {
         try {
-            return service.postCreateClaim(entityId, snaktype, property, value, "en", csrfTokenClient.getTokenBlocking())
+            return getCsrfToken()
+                    .flatMap(csrfToken -> wikidataInterface.postCreateClaim(toRequestBody(entityId),
+                            toRequestBody(snaktype),
+                            toRequestBody(property),
+                            toRequestBody("\"" + value + "\""),
+                            toRequestBody("qqx"),
+                            toRequestBody(csrfToken)))
                     .map(mwPostResponse -> {
                         if (mwPostResponse.getSuccessVal() == 1) {
                             return 1L;
@@ -36,5 +43,22 @@ public class WikidataClient {
         } catch (Throwable throwable) {
             return Observable.just(-1L);
         }
+    }
+
+    public RequestBody toRequestBody(String value) {
+        return RequestBody.create(MediaType.parse("text/plain"), value);
+    }
+
+    @NotNull
+    private Observable<String> getCsrfToken() {
+        return wikidataInterface.getCsrfToken()
+                .map(mwQueryResponse -> {
+                    Timber.d("Get csrf token response %s", mwQueryResponse.success());
+                    return mwQueryResponse.query().csrfToken();
+                });
+    }
+
+    public ObservableSource<?> addEditTag(Long revisionId, String commonsAppTag, String commonsAppEditReason) {
+        return null;
     }
 }
